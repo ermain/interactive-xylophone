@@ -1,0 +1,5 @@
+{
+text: "What is this note?"
+picture: "pic.jpg"
+answer: hit 60
+}
