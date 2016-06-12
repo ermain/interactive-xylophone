@@ -1,73 +1,78 @@
 #include <Adafruit_NeoPixel.h>
 #define LED_PIN 6 
-#define LED_COUNT 1
+#define LED_COUNT 12
 
 // Create an instance of the Adafruit_NeoPixel class called "leds".
 // That'll be what we refer to from here on...
 Adafruit_NeoPixel leds = Adafruit_NeoPixel(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
-// these constants won't change:
-const int mux_sig_pin = A0; // the piezo is connected to analog pin 0
-const int threshold = 100;  // threshold value to decide when the detected sound is a knock or not
-
-int mux_ctrl_pins[] = {2, 3, 4, 5};
-int sensorReading = 0;
-
-// these variables will change:
-int key_state[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};      // variable to store the value read from the sensor pin
+// using A0 -- A12 as inputs
+int key_state[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};      // variable to store the value read from the sensor pin
+int key_play_time[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+int threshold[] = {20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20};
+int max_time = 90;
 
 // function declaration
-int readMux(int chan);     // reads from the analog mux
 int flashLight(int led_num);
 
 void setup() {
-  for(int i = 0; i < 4; i++){
-    pinMode(mux_ctrl_pins[i], OUTPUT);
-    digitalWrite(mux_ctrl_pins[i], LOW);
-  }
   leds.begin();
   Serial.begin(9600);       // use the serial port
-  leds.setPixelColor(0, 0xFFFFFF);
+  for(int i = 0; i < LED_COUNT; i++) {
+    leds.setPixelColor(i, 0x111111);
+  }
   leds.show();
 }
 
 void loop() {
-  // read the sensor and store it in the variable sensorReading:
-  for(int i = 0; i < 13; i++) {
-    sensorReading = readMux(i);    
-   // Serial.print("sensor: ");
-   // Serial.print(i);
-   // Serial.print(" - ");
-   // Serial.print(sensorReading); 
-    // if the sensor reading is greater than the threshold:
-    if (sensorReading >= threshold) {
-      // send the string "Knock!" back to the computer, followed by newline
-      key_state[i] = !key_state[i];
-      Serial.print("hit key: ");
-      Serial.println(i);
-      Serial.print("sensor val: ");
-      Serial.println(sensorReading);
-      //flashLight(i);
+  for(int i = 0; i <= 12; i++) {
+    int piezo = analogRead(i);
+    if(piezo > threshold[i]) {
+      if(key_state[i] == 0) {
+        key_play_time[i] = 0;
+        key_state[i] = 1;        
+        flashLight(i);
+      }
+      else {
+        key_play_time[i] += 1;
+      }
+    }
+    else if (key_state[i] == 1) {
+      key_play_time[i] += 1;
+      if (key_play_time[i] > max_time) {
+        key_state[i] = 0;
+        flashLight(i);
+      }
     }
   }
 }
 
+
+/*
+void loop() {
+  // read the sensor and store it in the variable sensorReading:
+  for(int i = 0; i <= 12; i++) {
+    sensorReading = analogRead(i);    
+    // if the sensor reading is greater than the threshold and key_state is 0:
+    if (sensorReading >= threshold && key_state[i] == 0) {
+      // send the string "Knock!" back to the computer, followed by newline
+        key_state[i] = 1;
+        Serial.print("hit key: ");
+        Serial.print(i);
+        Serial.print(" sensor val: ");
+        Serial.println(sensorReading);
+    }
+    else if (sensorReading < threshold ) {
+      key_state[i] = 0;
+    }
+    flashLight(i);
+  }
+}
+*/
 int flashLight(int led_num) {
   if(key_state[led_num] == 1)
-    leds.setPixelColor(led_num, 0xFF00FF);
+    leds.setPixelColor(led_num, 0xFFFFFF);
   else
-    leds.setPixelColor(led_num, 0x00FF00);
+    leds.setPixelColor(led_num, 0x111111);
   leds.show();
-}
-
-// Read a value from the mux.
-int readMux(int chan) {
-  for(int i = 0; i < 4; i++){
-    if((chan >> i) & 0x0001 == 1)
-      digitalWrite(mux_ctrl_pins[i], HIGH);
-    else
-      digitalWrite(mux_ctrl_pins[i], LOW);
-  }
-  delayMicroseconds(1);
-  return analogRead(mux_sig_pin);
 }
