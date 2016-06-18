@@ -32,6 +32,7 @@ void loop() {
         key_play_time[i] = 0;
         key_state[i] = 1;        
         flashLight(i);
+        Serial.println(i);
       }
       else {
         key_play_time[i] += 1;
@@ -47,28 +48,6 @@ void loop() {
   }
 }
 
-
-/*
-void loop() {
-  // read the sensor and store it in the variable sensorReading:
-  for(int i = 0; i <= 12; i++) {
-    sensorReading = analogRead(i);    
-    // if the sensor reading is greater than the threshold and key_state is 0:
-    if (sensorReading >= threshold && key_state[i] == 0) {
-      // send the string "Knock!" back to the computer, followed by newline
-        key_state[i] = 1;
-        Serial.print("hit key: ");
-        Serial.print(i);
-        Serial.print(" sensor val: ");
-        Serial.println(sensorReading);
-    }
-    else if (sensorReading < threshold ) {
-      key_state[i] = 0;
-    }
-    flashLight(i);
-  }
-}
-*/
 int flashLight(int led_num) {
   if(key_state[led_num] == 1)
     leds.setPixelColor(led_num, 0xFFFFFF);

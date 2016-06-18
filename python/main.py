@@ -9,6 +9,7 @@ from audio import *
 sys.path.append('./input')
 sys.path.append('./graphics')
 from flashcard import *
+from xylophone import *
 
 class KeyboardFlashcardDemo(BaseWidget): 
 
@@ -18,7 +19,7 @@ class KeyboardFlashcardDemo(BaseWidget):
     super(KeyboardFlashcardDemo, self).__init__()
     # set up audio generators
     self.audio = Audio()
-    self.synth = Synth('../FluidR3_GM.sf2')
+    self.synth = Synth('FluidR3_GM.sf2')
     self.synth.program(0, 0, 40) # chan 0, bank 0, violin
     self.audio.add_generator(self.synth)
 
@@ -41,9 +42,32 @@ class KeyboardFlashcardDemo(BaseWidget):
     dt = kivyClock.frametime
     self.deck.on_update(dt)
 
-if len(sys.argv) >= 2:
-  mode = int(sys.argv[1])
-  run(eval(sys.argv[1]))
 
-else:
-  run(KeyboardFlashcardDemo)
+class XylophoneFlashcardDemo(BaseWidget): 
+
+  def __init__(self):
+    super(XylophoneFlashcardDemo, self).__init__()
+    # set up audio generators
+    self.audio = Audio()
+    self.synth = Synth('FluidR3_GM.sf2')
+    self.synth.program(0, 0, 40) # chan 0, bank 0, violin
+    self.audio.add_generator(self.synth)
+
+    self.deck = Deck("./graphics/flashcard_data.txt", (400,300))
+    self.add_widget(self.deck)
+    self.xylo = Xylophone(self.deck.answer_cb)
+
+  def on_update(self) :
+    dt = kivyClock.frametime
+    self.xylo.on_update()
+    self.deck.on_update(dt)
+    
+
+run(XylophoneFlashcardDemo)
+
+#if len(sys.argv) >= 2:
+#  mode = int(sys.argv[1])
+#  run(eval(sys.argv[1]))
+#
+#else:
+#  run(XylophoneFlashcardDemo)
